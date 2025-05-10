@@ -1,0 +1,14 @@
+RewriteEngine On
+
+# Redirect direct blog route access, but exclude requests with Referer from the same site
+RewriteCond %{REQUEST_URI} ^/blog [NC]
+RewriteCond %{HTTP_REFERER} !^https?://[^/]+/.*$ [NC]
+RewriteRule ^ / [R=302,L]
+
+# If an existing asset or directory is requested, serve it
+RewriteCond %{DOCUMENT_ROOT}%{REQUEST_URI} -f [OR]
+RewriteCond %{DOCUMENT_ROOT}%{REQUEST_URI} -d
+RewriteRule ^ - [L]
+
+# If the requested resource doesn't exist, serve index.html
+RewriteRule ^ /index.html [L] 
