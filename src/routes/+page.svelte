@@ -5,8 +5,8 @@
 </script>
 
 <svelte:head>
-  <title>Andi's blog - Home</title>
-  <meta name="description" content="Welcome to Andi's blog - a modern blog about web development, tech and more" />
+  <title>Jeanine's blog - Home</title>
+  <meta name="description" content="Welcome to Jeanine's blog - a modern blog about web development, tech and more" />
 </svelte:head>
 
 <section class="hero">

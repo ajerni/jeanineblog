@@ -5,81 +5,64 @@
  * Define all your blog API routes in this file
  */
 
+require_once __DIR__ . '/basic_auth.php';
+
 // Helper function to handle CORS preflight requests
 function handleCORS($request, $response) {
-    // Add CORS headers - use wildcard for all origins
-    header("Access-Control-Allow-Origin: *");
-    header("Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS");
-    header("Access-Control-Allow-Headers: Content-Type, Authorization, Accept, Origin, X-Force-Refresh, X-Requested-With, Cache-Control, Pragma, Expires");
-    header("Content-Type: application/json");
+    // Allow requests from the blog frontend
+    $allowedOrigins = [
+        'https://test.andierni.ch',
+        'http://localhost:4321',   // Astro dev server
+        'http://localhost:3000'    // Alternative local dev server
+    ];
     
-    // Standard cache control headers to prevent caching
-    header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
-    header("Pragma: no-cache");
-    header("Expires: Mon, 26 Jul 1997 05:00:00 GMT"); // Past date to ensure no caching
+    $origin = isset($_SERVER['HTTP_ORIGIN']) ? $_SERVER['HTTP_ORIGIN'] : '';
+    
+    // Check if the origin is allowed
+    if (in_array($origin, $allowedOrigins)) {
+        header("Access-Control-Allow-Origin: $origin");
+    } else {
+        // For development, allow all origins
+        if (getenv('ENVIRONMENT') === 'development') {
+            header("Access-Control-Allow-Origin: *");
+        }
+    }
+    
+    // Add CORS headers
+    header("Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS");
+    header("Access-Control-Allow-Headers: Content-Type, Authorization");
+    header("Access-Control-Allow-Credentials: true");
+    header("Access-Control-Max-Age: 3600");
     
     // Handle OPTIONS preflight request
     if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
-        // For OPTIONS request, just return success with the headers
         http_response_code(200);
-        exit();
+        exit;
     }
     
     return null; // Continue with normal request handling
 }
 
 // GET all blog posts
-$app->get('/api/posts', function($request, $response) use ($pdo) {
+$app->get('/api/jeanineposts', function($request, $response) use ($pdo) {
     // Handle CORS preflight
     $corsResponse = handleCORS($request, $response);
     if ($corsResponse) return $corsResponse;
     
-    error_log("API /api/posts called at " . date('Y-m-d H:i:s')); // Debug log with timestamp
-    
-    // Check for refresh parameters
-    $params = $request->getQueryParams();
-    $refresh = isset($params['refresh_db']) || isset($params['bypass_cache']) || isset($params['_force']) || isset($params['nocache']);
-    
-    if ($refresh) {
-        // Log that we're forcing a database refresh
-        error_log("NOTICE: Forcing fresh data from database due to refresh parameters");
-        
-        // Check if we should run a small query to ensure fresh data
-        if (isset($params['refresh_db'])) {
-            // Execute a small query to ensure connection is fresh
-            try {
-                $pdo->query("SELECT 1");
-                error_log("Database connection refreshed successfully");
-            } catch (PDOException $e) {
-                error_log("Failed to refresh database connection: " . $e->getMessage());
-            }
-        }
-    }
-    
+    error_log("API /api/jeanineposts called"); // Debug log
     try {
+        $params = $request->getQueryParams();
         $page = isset($params['page']) ? (int)$params['page'] : 1;
         $limit = isset($params['limit']) ? (int)$params['limit'] : 10;
         $offset = ($page - 1) * $limit;
         
-        // Debug information for pagination
-        error_log("Pagination params: page=$page, limit=$limit, offset=$offset");
-        
         // Get total count for pagination
-        $countStmt = $pdo->query('SELECT COUNT(*) FROM blog_posts WHERE published = 1');
+        $countStmt = $pdo->query('SELECT COUNT(*) FROM jeanine_blog_posts WHERE published = 1');
         $totalPosts = $countStmt->fetchColumn();
-        error_log("Total posts in database: $totalPosts");
         
-        // Add standard cache control and CORS headers
-        $response = $response->withHeader('Access-Control-Allow-Origin', '*');
-        $response = $response->withHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-        $response = $response->withHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, Accept, Origin, X-Force-Refresh, X-Requested-With, Cache-Control, Pragma, Expires');
-        $response = $response->withHeader('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0');
-        $response = $response->withHeader('Pragma', 'no-cache');
-        $response = $response->withHeader('Expires', 'Mon, 26 Jul 1997 05:00:00 GMT');
-        
-        // Query with hardcoded LIMIT/OFFSET and ALWAYS order by published_date DESC to get newest posts first
+        // Query with pagination
         $query = 'SELECT id, title, slug, excerpt, content, featured_image, published_date, 
-                  updated_date, tags FROM blog_posts 
+                  updated_date, tags FROM jeanine_blog_posts 
                   WHERE published = 1 
                   ORDER BY published_date DESC 
                   LIMIT ' . intval($limit) . ' OFFSET ' . intval($offset);
@@ -87,18 +70,24 @@ $app->get('/api/posts', function($request, $response) use ($pdo) {
         $stmt->execute();
         $posts = $stmt->fetchAll(PDO::FETCH_ASSOC);
         
-        error_log("Query returned " . count($posts) . " posts for page $page with limit $limit");
-        
         // Parse tags for each post if stored as JSON string
         foreach ($posts as &$post) {
             if (isset($post['tags']) && is_string($post['tags'])) {
                 $post['tags'] = json_decode($post['tags'], true);
             }
+            
+            // Format dates for better frontend compatibility
+            if (isset($post['published_date'])) {
+                $date = new DateTime($post['published_date']);
+                $post['published_date_formatted'] = $date->format('Y-m-d\TH:i:s\Z');
+                $post['published_date_display'] = $date->format('F j, Y');
+            }
+            
+            if (isset($post['updated_date']) && $post['updated_date']) {
+                $date = new DateTime($post['updated_date']);
+                $post['updated_date_formatted'] = $date->format('Y-m-d\TH:i:s\Z');
+            }
         }
-        
-        $lastPage = ceil($totalPosts / $limit);
-        
-        error_log("Pagination info - total: $totalPosts, page: $page, limit: $limit, lastPage: $lastPage");
         
         $response = $response->withHeader('Content-Type', 'application/json');
         $response->getBody()->write(json_encode([
@@ -107,14 +96,13 @@ $app->get('/api/posts', function($request, $response) use ($pdo) {
                 'total' => $totalPosts,
                 'page' => $page,
                 'limit' => $limit,
-                'lastPage' => $lastPage
+                'pages' => ceil($totalPosts / $limit)
             ],
-            'timestamp' => time(),
             'status' => 'success'
         ]));
         return $response;
     } catch (PDOException $e) {
-        error_log("API /api/posts error: " . $e->getMessage());
+        error_log("Database error in /api/jeanineposts: " . $e->getMessage());
         $response = $response->withStatus(500);
         $response = $response->withHeader('Content-Type', 'application/json');
         $response->getBody()->write(json_encode([
@@ -126,16 +114,18 @@ $app->get('/api/posts', function($request, $response) use ($pdo) {
 });
 
 // GET single blog post by slug
-$app->get('/api/posts/{slug}', function($request, $response, $args) use ($pdo) {
+$app->get('/api/jeaineposts/{slug}', function($request, $response, $args) use ($pdo) {
     // Handle CORS preflight
     $corsResponse = handleCORS($request, $response);
     if ($corsResponse) return $corsResponse;
     
     try {
         $slug = $args['slug'];
+        error_log("Getting post with slug: " . $slug);
+        
         $stmt = $pdo->prepare('SELECT id, title, slug, excerpt, content, featured_image, 
                               published_date, updated_date, tags 
-                              FROM blog_posts
+                              FROM jeanine_blog_posts
                               WHERE slug = ? AND published = 1');
         $stmt->execute([$slug]);
         $post = $stmt->fetch();
@@ -143,6 +133,7 @@ $app->get('/api/posts/{slug}', function($request, $response, $args) use ($pdo) {
         $response = $response->withHeader('Content-Type', 'application/json');
         
         if (!$post) {
+            error_log("Post not found with slug: " . $slug);
             $response = $response->withStatus(404);
             $response->getBody()->write(json_encode([
                 'status' => 'error', 
@@ -156,9 +147,70 @@ $app->get('/api/posts/{slug}', function($request, $response, $args) use ($pdo) {
             $post['tags'] = json_decode($post['tags'], true);
         }
         
+        // Format dates for better frontend compatibility
+        if (isset($post['published_date'])) {
+            $date = new DateTime($post['published_date']);
+            $post['published_date_formatted'] = $date->format('Y-m-d\TH:i:s\Z');
+            $post['published_date_display'] = $date->format('F j, Y');
+        }
+        
+        if (isset($post['updated_date']) && $post['updated_date']) {
+            $date = new DateTime($post['updated_date']);
+            $post['updated_date_formatted'] = $date->format('Y-m-d\TH:i:s\Z');
+        }
+        
+        error_log("Returning post data for slug: " . $slug);
         $response->getBody()->write(json_encode(['post' => $post, 'status' => 'success']));
         return $response;
     } catch (PDOException $e) {
+        error_log("Database error in /api/jeanineposts/{slug}: " . $e->getMessage());
+        $response = $response->withStatus(500);
+        $response = $response->withHeader('Content-Type', 'application/json');
+        $response->getBody()->write(json_encode([
+            'status' => 'error',
+            'message' => 'Database error: ' . $e->getMessage()
+        ]));
+        return $response;
+    }
+});
+
+// GET tags for filtering
+$app->get('/api/jeainetags', function($request, $response) use ($pdo) {
+    // Handle CORS preflight
+    $corsResponse = handleCORS($request, $response);
+    if ($corsResponse) return $corsResponse;
+    
+    try {
+        // Get all tags from published posts
+        $stmt = $pdo->query('SELECT tags FROM jeanine_blog_posts WHERE published = 1');
+        $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        
+        // Extract and merge all tags
+        $allTags = [];
+        foreach ($result as $row) {
+            if (isset($row['tags']) && $row['tags']) {
+                $tags = is_string($row['tags']) ? json_decode($row['tags'], true) : $row['tags'];
+                if (is_array($tags)) {
+                    foreach ($tags as $tag) {
+                        if (!in_array($tag, $allTags)) {
+                            $allTags[] = $tag;
+                        }
+                    }
+                }
+            }
+        }
+        
+        // Sort tags alphabetically
+        sort($allTags);
+        
+        $response = $response->withHeader('Content-Type', 'application/json');
+        $response->getBody()->write(json_encode([
+            'tags' => $allTags,
+            'status' => 'success'
+        ]));
+        return $response;
+    } catch (PDOException $e) {
+        error_log("Database error in /api/jeaninetags: " . $e->getMessage());
         $response = $response->withStatus(500);
         $response = $response->withHeader('Content-Type', 'application/json');
         $response->getBody()->write(json_encode([
@@ -170,13 +222,16 @@ $app->get('/api/posts/{slug}', function($request, $response, $args) use ($pdo) {
 });
 
 // Create a new blog post
-$app->post('/api/posts', function($request, $response) use ($pdo) {
+$app->post('/api/jeanineposts', function($request, $response) use ($pdo) {
     // Handle CORS preflight
     $corsResponse = handleCORS($request, $response);
     if ($corsResponse) return $corsResponse;
+
+    requireBasicAuth($request, $response);
     
     try {
         $data = $request->getParsedBody();
+        error_log("Received data for POST /api/jeaineposts: " . json_encode($data));
         
         // Validate required fields
         if (empty($data['title']) || empty($data['content'])) {
@@ -207,7 +262,7 @@ $app->post('/api/posts', function($request, $response) use ($pdo) {
         $now = date('Y-m-d H:i:s');
         
         // Insert the new post
-        $stmt = $pdo->prepare('INSERT INTO blog_posts 
+        $stmt = $pdo->prepare('INSERT INTO jeanine_blog_posts 
                               (title, slug, excerpt, content, featured_image, 
                                published_date, tags, published) 
                                VALUES (?, ?, ?, ?, ?, ?, ?, ?)');
@@ -223,16 +278,19 @@ $app->post('/api/posts', function($request, $response) use ($pdo) {
         ]);
         
         $postId = $pdo->lastInsertId();
+        error_log("Created new post with ID: " . $postId);
         
         $response = $response->withStatus(201);
         $response = $response->withHeader('Content-Type', 'application/json');
         $response->getBody()->write(json_encode([
             'status' => 'success',
             'message' => 'Post created successfully',
-            'postId' => $postId
+            'postId' => $postId,
+            'slug' => $data['slug']
         ]));
         return $response;
     } catch (PDOException $e) {
+        error_log("Database error in POST /api/jeanineposts: " . $e->getMessage());
         $response = $response->withStatus(500);
         $response = $response->withHeader('Content-Type', 'application/json');
         $errorMessage = $e->getMessage();
@@ -254,17 +312,20 @@ $app->post('/api/posts', function($request, $response) use ($pdo) {
 });
 
 // Update a blog post
-$app->put('/api/posts/{id}', function($request, $response, $args) use ($pdo) {
+$app->put('/api/jeanineposts/{id}', function($request, $response, $args) use ($pdo) {
     // Handle CORS preflight
     $corsResponse = handleCORS($request, $response);
     if ($corsResponse) return $corsResponse;
+
+    requireBasicAuth($request, $response);
     
     try {
         $id = $args['id'];
         $data = $request->getParsedBody();
+        error_log("Updating post ID: " . $id . " with data: " . json_encode($data));
         
         // Check if post exists
-        $stmt = $pdo->prepare('SELECT id FROM blog_posts WHERE id = ?');
+        $stmt = $pdo->prepare('SELECT id FROM jeanine_blog_posts WHERE id = ?');
         $stmt->execute([$id]);
         if (!$stmt->fetch()) {
             $response = $response->withStatus(404);
@@ -342,38 +403,69 @@ $app->put('/api/posts/{id}', function($request, $response, $args) use ($pdo) {
         $params[] = $id;
         
         // Execute update
-        $sql = 'UPDATE blog_posts SET ' . implode(', ', $updateFields) . ' WHERE id = ?';
+        $sql = 'UPDATE jeanine_blog_posts SET ' . implode(', ', $updateFields) . ' WHERE id = ?';
         $stmt = $pdo->prepare($sql);
         $stmt->execute($params);
+        error_log("Updated post ID: " . $id);
+        
+        // Get the updated slug to return
+        $updatedSlug = "";
+        if (!empty($data['slug'])) {
+            $updatedSlug = $data['slug'];
+        } elseif (!empty($data['title'])) {
+            $updatedSlug = strtolower(trim(preg_replace('/[^A-Za-z0-9-]+/', '-', $data['title'])));
+        } else {
+            $stmtSlug = $pdo->prepare('SELECT slug FROM jeanine_blog_posts WHERE id = ?');
+            $stmtSlug->execute([$id]);
+            $postData = $stmtSlug->fetch();
+            if ($postData && isset($postData['slug'])) {
+                $updatedSlug = $postData['slug'];
+            }
+        }
         
         $response = $response->withHeader('Content-Type', 'application/json');
         $response->getBody()->write(json_encode([
             'status' => 'success',
-            'message' => 'Post ' . $id . ' updated successfully'
+            'message' => 'Post ' . $id . ' updated successfully',
+            'slug' => $updatedSlug
         ]));
         return $response;
     } catch (PDOException $e) {
+        error_log("Database error in PUT /api/jeanineposts/{id}: " . $e->getMessage());
         $response = $response->withStatus(500);
         $response = $response->withHeader('Content-Type', 'application/json');
-        $response->getBody()->write(json_encode([
-            'status' => 'error',
-            'message' => 'Database error: ' . $e->getMessage()
-        ]));
+        $errorMessage = $e->getMessage();
+        
+        // Check for duplicate slug
+        if (strpos($errorMessage, 'Duplicate entry') !== false && strpos($errorMessage, 'slug') !== false) {
+            $response->getBody()->write(json_encode([
+                'status' => 'error',
+                'message' => 'A post with this slug already exists'
+            ]));
+        } else {
+            $response->getBody()->write(json_encode([
+                'status' => 'error',
+                'message' => 'Database error: ' . $errorMessage
+            ]));
+        }
         return $response;
     }
 });
 
 // Delete a blog post
-$app->delete('/api/posts/{id}', function($request, $response, $args) use ($pdo) {
+$app->delete('/api/jeanineposts/{id}', function($request, $response, $args) use ($pdo) {
     // Handle CORS preflight
     $corsResponse = handleCORS($request, $response);
     if ($corsResponse) return $corsResponse;
+
+    requireBasicAuth($request, $response);
     
     try {
         $id = $args['id'];
+        error_log("Deleting post ID: " . $id);
         
         // Check if post exists
-        $stmt = $pdo->prepare('SELECT id FROM blog_posts WHERE id = ?');
+        $stmt = $pdo->prepare('SELECT id FROM jeanine_blog_posts WHERE id = ?');
         $stmt->execute([$id]);
         if (!$stmt->fetch()) {
             $response = $response->withStatus(404);
@@ -386,8 +478,9 @@ $app->delete('/api/posts/{id}', function($request, $response, $args) use ($pdo) 
         }
         
         // Delete post
-        $stmt = $pdo->prepare('DELETE FROM blog_posts WHERE id = ?');
+        $stmt = $pdo->prepare('DELETE FROM jeanine_blog_posts WHERE id = ?');
         $stmt->execute([$id]);
+        error_log("Deleted post ID: " . $id);
         
         $response = $response->withHeader('Content-Type', 'application/json');
         $response->getBody()->write(json_encode([
@@ -396,6 +489,7 @@ $app->delete('/api/posts/{id}', function($request, $response, $args) use ($pdo) 
         ]));
         return $response;
     } catch (PDOException $e) {
+        error_log("Database error in DELETE /api/jeanineposts/{id}: " . $e->getMessage());
         $response = $response->withStatus(500);
         $response = $response->withHeader('Content-Type', 'application/json');
         $response->getBody()->write(json_encode([

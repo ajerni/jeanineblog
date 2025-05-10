@@ -100,7 +100,7 @@ export async function fetchAllPosts(): Promise<void> {
     try {
       console.log('Starting API fetch...');
       // Request 100 posts to make sure we get all of them
-      const response = await fetch(`${API_URL}/posts?limit=100&_=${Date.now()}`);
+      const response = await fetch(`${API_URL}/jeanineposts?limit=100&_=${Date.now()}`);
       
       if (!response.ok) {
         throw new Error(`API error: ${response.status}`);

@@ -5,8 +5,8 @@ export async function load() {
   
   return {
     meta: {
-      title: 'Andi\'s blog - Home',
-      description: 'Welcome to Andi\'s blog - a modern blog about web development, tech and more'
+      title: 'Jeanine\'s blog - Home',
+      description: 'Welcome to Jeanine\'s blog - a modern blog about life, love and more.'
     }
   };
 } 
