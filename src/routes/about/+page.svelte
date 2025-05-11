@@ -1,10 +1,13 @@
 <script>
   // About page component
+  import Twitter from '$lib/icons/Twitter.svelte';
+  import Instagram from '$lib/icons/Instagram.svelte';
+  import TikTok from '$lib/icons/TikTok.svelte';
 </script>
 
 <svelte:head>
-  <title>About | Andi's blog</title>
-  <meta name="description" content="Learn more about Andi and this blog." />
+  <title>About | Jeanine's blog</title>
+  <meta name="description" content="Learn more about Jeanine and this blog." />
 </svelte:head>
 
 <div class="about-container">
@@ -13,37 +16,43 @@
   <div class="about-content">
     <div class="profile-section">
       <div class="profile-image-container">
-        <img src="andiprofile.jpg" alt="Profile" class="profile-image" />
+        <img src="jeanineprofile2.jpg" alt="Profile" class="profile-image" />
       </div>
       
       <div class="bio">
-        <h2>Andi Erni</h2>
-        <p class="tagline">Developer & Tech Enthusiast</p>
+        <h2>Jeanine Erni</h2>
+        <p class="tagline">Bloggerin & Pyromanin</p>
         
         <div class="social-links">
-          <a href="https://x.com/andreas_erni" target="_blank" rel="noopener noreferrer">Twitter</a>
-          <a href="https://github.com/ajerni" target="_blank" rel="noopener noreferrer">GitHub</a>
+          <a href="https://x.com/jeerni" target="_blank" rel="noopener noreferrer" aria-label="Twitter">
+            <Twitter size={24} />
+          </a>
+          <a href="https://www.tiktok.com/@jeanineerni" target="_blank" rel="noopener noreferrer" aria-label="TikTok">
+            <TikTok size={24} />
+          </a>
+          <a href="https://www.instagram.com/therealjeanigram" target="_blank" rel="noopener noreferrer" aria-label="Instagram">
+            <Instagram size={24} />
+          </a>
         </div>
       </div>
     </div>
     
     <div class="content-section">
       <h3>About Me</h3>
-      <p>Hi there! I'm Andi Erni, a passionate hobby developer and tech enthusiast. This blog is my platform to share insights, tutorials, and thoughts on web development, programming, and technology. Well, it's not - it's just to test automated AI content generation and to showcase my skills 😉.</p>
+      <p>Hi there! I'm Jeanine Erni, a passionate hobby blogger and ... bla bla bla ... 😉.</p>
       
       <h3>About This Blog</h3>
-      <p>This blog serves mainly as my test platform for automation and AI tools. The content might change over time and is not always up to date and should not be taken seriously at all 🐛. It's not about the content, but about the technology and tools behind it.</p>
+      <p>This blog ... bla bla bla ... 😉.</p>
 
-      <p>Some features of this blog include:</p>
+      <p>Things I like:</p>
       <ul>
-        <li>AI generated blog posts 📝 and images 📷</li>
-        <li>Automated publishing 🤖 of the blog post</li>
-        <li>Super sophisticated search 👀 functionality</li>
+        <li>Reisen</li>
+        <li>Grillen</li>
+        <li>Wein</li>
         <li>...</li>
       </ul>
       
-      <h3>Get in Touch</h3>
-      <p>Have questions, project ideas, or just want to say hello? Feel free to reach out through any of the social links above or visit my website at <a href="https://www.andierni.tech" target="_blank" rel="noopener noreferrer">www.andierni.ch</a>.</p>
+     
     </div>
   </div>
 </div>
@@ -118,8 +127,10 @@
   .social-links a {
     color: var(--link-color);
     text-decoration: none;
-    font-weight: 500;
     transition: color 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
   
   .social-links a:hover {

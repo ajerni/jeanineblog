@@ -2,6 +2,9 @@
   import { onMount } from 'svelte';
   import { writable } from 'svelte/store';
   import Search from '$lib/icons/Search.svelte';
+  import Twitter from '$lib/icons/Twitter.svelte';
+  import Instagram from '$lib/icons/Instagram.svelte';
+  import TikTok from '$lib/icons/TikTok.svelte';
   import SearchComponent from '$lib/components/Search.svelte';
   import { showSearch } from '$lib/stores/SearchStore';
 
@@ -28,7 +31,7 @@
 </script>
 
 <svelte:head>
-  <title>Andi's blog</title>
+  <title>Jeanine's blog</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
 </svelte:head>
 
@@ -38,14 +41,14 @@
     <div class="header-container">
       <a href="/" class="logo">
         <span class="emoji">😎</span>
-        <span class="title">Andi's blog</span>
+        <span class="title">Jeanine's blog</span>
       </a>
       
       <nav>
         <a href="/blog?page=1">Blog</a>
         <a href="/tags">Tags</a>
         <a href="/about">About</a>
-        <a href="https://blogbackend.andierni.ch/">Admin</a>
+        <a href="https://jeanineblogbackend.andierni.ch/">Admin</a>
         
         <button 
           class="search-button" 
@@ -72,10 +75,17 @@
   
   <footer>
     <div class="footer-container">
-      <p>© 2025 blog.andierni.com - All rights reserved.</p>
+      <p>© 2025 jeaninblog.ch - All rights reserved.</p>
       <div class="footer-links">
-        <a href="https://x.com/andreas_erni">Twitter</a>
-        <a href="https://github.com/ajerni">GitHub</a>
+        <a href="https://x.com/jeerni" aria-label="Twitter">
+          <Twitter size={20} />
+        </a>
+        <a href="https://www.tiktok.com/@jeanineerni" aria-label="TikTok">
+          <TikTok size={20} />
+        </a>
+        <a href="https://www.instagram.com/therealjeanigram" aria-label="Instagram">
+          <Instagram size={20} />
+        </a>
       </div>
     </div>
   </footer>
@@ -275,6 +285,9 @@
     color: var(--nav-text-color);
     text-decoration: none;
     transition: color 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
 
   .footer-links a:hover {
