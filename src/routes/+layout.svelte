@@ -75,7 +75,7 @@
   
   <footer>
     <div class="footer-container">
-      <p>© 2025 jeaninblog.ch - All rights reserved.</p>
+      <p>© 2025 www.jeanineblog.ch - All rights reserved.</p>
       <div class="footer-links">
         <a href="https://x.com/jeerni" aria-label="Twitter">
           <Twitter size={20} />
