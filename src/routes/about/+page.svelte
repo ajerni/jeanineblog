@@ -21,7 +21,7 @@
       
       <div class="bio">
         <h2>Jeanine Erni</h2>
-        <p class="tagline">Bloggerin & Pyromanin</p>
+        <p class="tagline">Bloggerin & Weltenbummlerin</p>
         
         <div class="social-links">
           <a href="https://x.com/jeerni" target="_blank" rel="noopener noreferrer" aria-label="Twitter">
@@ -39,20 +39,25 @@
     
     <div class="content-section">
       <h3>About Me</h3>
-      <p>Hi there! I'm Jeanine Erni, a passionate hobby blogger and ... bla bla bla ... 😉.</p>
+      <p>Hallo, ich bin Jeanine – Familienmensch, Weltenbummlerin, leidenschaftliche Theaterliebhaberin, Weinliebhaberin und Zitatensammlerin.</p>
+      
+      <h3>👨‍👩‍👧‍👦 Familie – mein Anker</h3>
+      <p>Meine Familie ist mein Rückhalt und meine Inspiration. Gemeinsame Erlebnisse, tolle Ausflüge und viel Spass teile ich gerne und lasse sie in meine Beiträge einfliessen.</p>
+      
+      <h3>✈️ Reisen – die Welt entdecken</h3>
+      <p>Ob Kurztrip oder Fernreise, das Entdecken neuer Orte und Kulturen bereichert mein Leben. Ich nehme euch mit auf meine Reisen und teile Tipps, Erfahrungen und besondere Momente.</p>
+      
+      <h3>🍷 Wein – Genuss in jedem Glas</h3>
+      <p>Ein gutes Glas Wein ist für mich mehr als nur ein Getränk – es ist ein Erlebnis. Als ehemalige Hobby-Winzerin entdecke ich gerne neue Weine, besuche Weingüter und teile meine Eindrücke und Empfehlungen.</p>
+      
+      <h3>🎭 Theater – meine Bühne des Lebens</h3>
+      <p>Seit 2003 bin ich aktives Mitglied der Theatergruppe Friesenberg und durfte in zahlreichen Produktionen mitwirken. Meine erste Rolle war die einer Kinderbuchautorin in "Der müde Ehemann". Heute engagiere ich mich auch im Vorstand als Kassierin und liebe es, sowohl auf als auch hinter der Bühne aktiv zu sein.</p>
+      
+      <h3>💬 Tägliche Zitate – Worte, die bewegen</h3>
+      <p>Ich glaube an die Kraft der Worte. Ab und zu teile ich inspirierende Zitate, die zum Nachdenken anregen, motivieren oder einfach ein Lächeln ins Gesicht zaubern.</p>
       
       <h3>About This Blog</h3>
-      <p>This blog ... bla bla bla ... 😉.</p>
-
-      <p>Things I like:</p>
-      <ul>
-        <li>Reisen</li>
-        <li>Grillen</li>
-        <li>Wein</li>
-        <li>...</li>
-      </ul>
-      
-     
+      <p>Mit diesem Blog möchte ich meine Leidenschaften mit euch teilen, euch inspirieren und gemeinsam mit euch lachen, lernen und genießen. Schön, dass ihr hier seid!</p>
     </div>
   </div>
 </div>
