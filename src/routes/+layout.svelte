@@ -44,6 +44,10 @@
         <span class="title">Jeanine's blog</span>
       </a>
       
+      <a href="https://twin.jeanineblog.ch/" class="digital-twin-button" target="_blank" rel="noopener noreferrer">
+        TALK TO MY DIGITAL TWIN
+      </a>
+      
       <nav>
         <a href="/blog?page=1">Blog</a>
         <a href="/tags">Tags</a>
@@ -199,6 +203,33 @@
     margin-right: 0.5rem;
   }
 
+  .digital-twin-button {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    text-decoration: none;
+    padding: 0.625rem 1.25rem;
+    border-radius: 9999px;
+    font-weight: 600;
+    font-size: 0.875rem;
+    letter-spacing: 0.025em;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 6px rgba(102, 126, 234, 0.25);
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+    white-space: nowrap;
+  }
+
+  .digital-twin-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(102, 126, 234, 0.4);
+    background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+  }
+
+  .digital-twin-button:active {
+    transform: translateY(0);
+  }
+
   nav {
     display: flex;
     align-items: center;
@@ -301,6 +332,11 @@
       gap: 0.75rem;
     }
     
+    .digital-twin-button {
+      font-size: 0.8rem;
+      padding: 0.5rem 1rem;
+    }
+    
     nav {
       width: 100%;
       justify-content: space-between;
@@ -325,6 +361,11 @@
   }
   
   @media (max-width: 480px) {
+    .digital-twin-button {
+      font-size: 0.75rem;
+      padding: 0.5rem 0.875rem;
+    }
+    
     nav {
       justify-content: center;
       gap: 0.5rem;
